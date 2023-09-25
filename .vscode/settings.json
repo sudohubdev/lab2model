@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.html": "html",
+        "iostream": "cpp"
+    },
+    "dotnet.defaultSolution": "Alab2-model.sln"
+}
