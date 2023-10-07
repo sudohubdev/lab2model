@@ -63,7 +63,7 @@ public partial class RLNumber {
                 a.digits.Remove(x);
                 b.digits.Remove(x);
             });
-            Console.WriteLine("a: " + a.ToString());
+            //Console.WriteLine("a: " + a.ToString());
             if(b == 0){
                 if(a != 0)
                     a.Sort();
