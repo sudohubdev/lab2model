@@ -31,6 +31,10 @@ public partial class RLNumber:ICloneable {
         this.digits = digits;
     }
     public RLNumber(double number, int precision=10, int maxexp = -16){
+        if(number == 0){
+            digits = new List<int>();
+            return;
+        }
         sign = number<0;
         number = Math.Abs(number);
         //create a list with powers of twos
@@ -83,7 +87,7 @@ public partial class RLNumber:ICloneable {
 
     // конвертери в десяткову і в строку
     public override string ToString() {
-        return (sign ? "1" : "0") + "." + Count + "." + //знак і кількість цифр
+        return (sign ? "1" : "0") + "." + Count + (digits.Count>0?".":"") + //знак і кількість цифр
         string.Join(".", digits.Select(d => d.ToString()));//РЛ-код
     }
     public double ToDouble(){

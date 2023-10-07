@@ -7,12 +7,33 @@ namespace Lab3;
 
 public partial class RLNumber {
     #region operators
-    public static RLNumber operator +(RLNumber a, RLNumber b) {
+    public static RLNumber operator +(RLNumber aa, RLNumber bb) {
+        //цей метод деструктивний, тому створюємо копію
+        RLNumber? a = aa.Clone() as RLNumber;
+        RLNumber? b = bb.Clone() as RLNumber;
+        if(a is null || b is null) throw new Exception("Invalid RLNumber");
+
         if(a==0) return b;
         if(b==0) return a;
+        //перевіряємо знаки і шлемо на мінус
+        // -a+b = b-a
+        if(a.sign && !b.sign){
+            a.sign = b.sign = false;
+            return b-a;
+        }
+        // a+(-b) = a-b
+        if(!a.sign && b.sign){
+            a.sign = b.sign = false;
+            return a-b;
+        }
         RLNumber result = new("0.0");
         result.digits = a.digits.Concat(b.digits).ToList();
         result.Merge();
+
+        // -a+(-b) = -(a+b)
+        if(a.sign && b.sign)
+            result.sign = true;
+        
         return result;
     }
     public static RLNumber operator -(RLNumber aa, RLNumber bb) {
@@ -90,6 +111,24 @@ public partial class RLNumber {
             for (int k = 0; k < b.Count; k++)
             {
                 result.digits.Add(a.digits[i] + b.digits[k]);
+            }
+        }
+        //зʼєднаємо однакові цифри
+        result.Merge();
+        return result;
+    }
+
+    public static RLNumber operator /(RLNumber a, RLNumber b) {
+        RLNumber result = new RLNumber("0.0");
+        if(a == 0 || b == 0) return result;
+
+        result.sign = a.sign ^ b.sign;
+        //Ni/Nk = Ni-Nk
+        for (int i = 0; i < a.Count; i++)
+        {
+            for (int k = 0; k < b.Count; k++)
+            {
+                result.digits.Add(a.digits[i] - b.digits[k]);
             }
         }
         //зʼєднаємо однакові цифри

@@ -1,5 +1,6 @@
 ﻿using Lab3;
 using System;
+using System.Diagnostics;
 
 #region umova
 /*
@@ -74,6 +75,8 @@ while(true)
     }
     catch(Exception e){
         Console.WriteLine("Помилка: " + e.Message);
+        if(Debugger.IsAttached)
+            Console.WriteLine("Трасування стеку: " + e.StackTrace);
     }
 }
 

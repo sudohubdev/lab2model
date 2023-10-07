@@ -51,8 +51,8 @@ namespace Prime.UnitTests.Services
             Random rand = new((int)DateTime.Now.Ticks);
             Parallel.For(0, 10000, i =>
             {
-                RLNumber num = new(rand.NextDouble()*1000);
-                RLNumber num2 = new(rand.NextDouble()*1000);
+                RLNumber num = new(rand.NextDouble()*1000 - 500);
+                RLNumber num2 = new(rand.NextDouble()*1000 - 500);
                 RLNumber result = num + num2;
                 double expected = num.ToDouble() + num2.ToDouble();
                 Console.WriteLine("Результат РЛ додавання: " + result.ToString());
