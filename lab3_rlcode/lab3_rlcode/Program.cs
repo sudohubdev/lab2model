@@ -1,6 +1,7 @@
 ﻿using Lab3;
 using System;
 
+#region umova
 /*
     Завдання 1
     Перевести номер залікової книжки/студентського квитка у двійкову систему
@@ -28,10 +29,11 @@ using System;
     3. Підготувати звіт в електронному вигляді: титульна сторінка, тема, мета,
     постановка завдання, код програми, результати виконання.
 */
+#endregion
 
 int zalik = 123456789;
-int D = 12;
-int M = 10;
+int D = 3;
+int M = 1;
 
 string zalikBinary = Convert.ToString(zalik, 2);
 Console.WriteLine("1: Двійкове подання: " + zalikBinary);
@@ -45,11 +47,33 @@ RLNumber RL_M = new(M);
 Console.WriteLine("   Dᵣₗ = " + RL_D.ToString());
 Console.WriteLine("   Mᵣₗ = " + RL_M.ToString());
 
-RLNumber RL_A = new(1 / (D + M));
-RLNumber RL_B = new((D + M) / (D * M));
+RLNumber RL_A = new(1.0d / (D + M));
+RLNumber RL_B = new((double)(D + M) / (double)(D * M));
 
 Console.WriteLine("4: A = " + RL_A.ToString());
 Console.WriteLine("   B = " + RL_B.ToString());
 
 RLNumber AB = RL_A + RL_B;
+RLNumber AB_ = RL_A - RL_B;
+
+Console.WriteLine("5: A + B = " + AB.ToString());
+Console.WriteLine("   A - B = " + AB_.ToString());
+
+Console.WriteLine(@"6: Інтерактивний РЛ калькулятор. 
+вводьте числа у десятковому або РЛ поданні з операціями
+у вигляді число оператор число.");
+Console.WriteLine("Наприклад 123.456 - \"0.2.4.1\"");
+while(true)
+{
+    try{
+        Console.Write("\u001b[32mВведіть вираз>\u001b[0m ");
+        string? input = Console.ReadLine();
+        if (input == null || input.Trim().Length == 0) break;
+        RLNumber result = Evaluator.EvaluateExpression(input);
+        Console.WriteLine("Результат: "+ result.ToString() + " = " + result.ToDouble());
+    }
+    catch(Exception e){
+        Console.WriteLine("Помилка: " + e.Message);
+    }
+}
 

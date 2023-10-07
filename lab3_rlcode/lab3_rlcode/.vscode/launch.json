@@ -12,7 +12,7 @@
             "program": "${workspaceFolder}/bin/Debug/net7.0/lab3_rlcode.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
-            "console": "internalConsole",
+            "console": "integratedTerminal",
             "stopAtEntry": false
         },
         {

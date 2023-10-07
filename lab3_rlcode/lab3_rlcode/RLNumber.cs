@@ -30,7 +30,7 @@ public partial class RLNumber:ICloneable {
         this.sign = sign;
         this.digits = digits;
     }
-    public RLNumber(double number, int precision=10, int maxexp = -10){
+    public RLNumber(double number, int precision=10, int maxexp = -16){
         sign = number<0;
         number = Math.Abs(number);
         //create a list with powers of twos
