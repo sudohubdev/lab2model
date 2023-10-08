@@ -14,33 +14,59 @@ namespace Lab3
             var expressionTree = ParseExpression(expression);
 
             // Compile and evaluate the expression
-            var compiledExpression = Expression.Lambda<Func<RLNumber>>(expressionTree).Compile();
-            return compiledExpression.Invoke();
+            expressionTree = Expression.Convert(expressionTree, typeof(object));
+            var compiledExpression = Expression.Lambda<Func<object>>(expressionTree).Compile();
+            if (compiledExpression.Invoke() is RLNumber result)
+            {
+                return result;
+            }
+            else if (compiledExpression.Invoke() is bool boolResult)//для логічних виразів виведемо 1 і 0
+            {
+                return new RLNumber(boolResult ? 1 : 0);
+            }
+            {
+                throw new Exception("Invalid expression");
+            }
         }
 
-        private static readonly Char[] Ops = new Char[] { '+', '-', '*', '/', '=', '>', '<' };
+        private static readonly Char[] Ops = new Char[] { '+', '-', '*', '/', '=', '>', '<', '(', ')' };
 
         private static Expression ParseExpression(string expression)
         {
-            // Use regular expression to split the expression into tokens
-            var regex = new Regex(@"([+*/=<>]|\s+-\s+)");
-            var tokens = regex.Split(expression).Where(token => !string.IsNullOrWhiteSpace(token)).ToArray();
+            var tokens = Tokenize(expression);
 
             // Convert tokens to expressions
             var operands = new Stack<Expression>();
             var operators = new Stack<char>();
-            
-            for (int i = 0; i < tokens.Length; i++)
+
+            foreach (var token in tokens)
             {
-                string token = tokens[i].Trim();
-                if (Ops.Contains(token[0]) && token.Length == 1)//token is an operator
+                if (Ops.Contains(token[0]) && token.Length == 1)
                 {
-                    // розраховуємо приорітети операторів
-                    while (operators.Count > 0 && Priority(operators.Peek()) >= Priority(token[0]))
+                    if (token[0] == '(')
                     {
-                        PopAndApplyOperator(operands, operators);
+                        operators.Push(token[0]);//дужка зразу в стек
                     }
-                    operators.Push(token[0]);
+                    else if (token[0] == ')')//закриваюча дужка
+                    {
+                        while (operators.Count > 0 && operators.Peek() != '(')//вкладені дужки як (a+(b+c))
+                        {
+                            PopAndApplyOperator(operands, operators);
+                        }
+                        if (operators.Count > 0 && operators.Peek() == '(') //викидаю вкладену дужку
+                        {
+                            operators.Pop();
+                        }
+                    }
+                    else
+                    {
+                        // без дужок рахую приорітети і про-оджу по стеку
+                        while (operators.Count > 0 && Priority(operators.Peek()) >= Priority(token[0]))
+                        {
+                            PopAndApplyOperator(operands, operators);
+                        }
+                        operators.Push(token[0]);
+                    }
                 }
                 else
                 {
@@ -50,10 +76,28 @@ namespace Lab3
 
             while (operators.Count > 0)
             {
-                PopAndApplyOperator(operands, operators);//викидаємо стек і рахуємо операцію
+                PopAndApplyOperator(operands, operators);
             }
 
             return operands.Peek();
+        }
+
+        private static List<string> Tokenize(string expression)
+        {
+            var regex = new Regex(@"([+*/=<>()]|\s+-\s+)");
+            var tokens = regex.Split(expression).Where(token => !string.IsNullOrWhiteSpace(token)).ToList();
+
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                if (tokens[i] == "-" && (i == 0 || Ops.Contains(tokens[i - 1][0]) || tokens[i - 1] == "("))
+                {
+                    // Handle negative numbers
+                    tokens[i] = "-" + tokens[i + 1];
+                    tokens.RemoveAt(i + 1);
+                }
+            }
+
+            return tokens;
         }
 
         private static void PopAndApplyOperator(Stack<Expression> operands, Stack<char> operators)
@@ -69,16 +113,16 @@ namespace Lab3
         {
             if (double.TryParse(token, out double doubleValue))
             {
-                return Expression.Constant(new RLNumber(doubleValue));//десяткове число
+                return Expression.Constant(new RLNumber(doubleValue));
             }
             else if (int.TryParse(token, out int intValue))
             {
-                return Expression.Constant(new RLNumber(intValue));//ціле число
+                return Expression.Constant(new RLNumber(intValue));
             }
             else
             {
-                // Remove quotes if any
-                return Expression.Constant(new RLNumber(token.Trim('"')));//РЛ-число
+                // Remove quotes if any 
+                return Expression.Constant(new RLNumber(token.Trim('"').Trim()));
             }
         }
 
@@ -107,7 +151,6 @@ namespace Lab3
 
         private static int Priority(char op)
         {
-            //PEMDAS
             switch (op)
             {
                 case '+':
@@ -119,7 +162,7 @@ namespace Lab3
                 case '=':
                 case '>':
                 case '<':
-                    return 3;
+                    return 0;
                 default:
                     return 0;
             }

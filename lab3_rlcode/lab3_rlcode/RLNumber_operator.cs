@@ -138,12 +138,12 @@ public partial class RLNumber {
 
     public static bool operator <(RLNumber a, RLNumber b) {
         if(a == 0 && b == 0) return false;
-
+        bool sign = a.sign ^ b.sign;
         //compare digits
         for (int i = 0; i < Math.Min(a.Count, b.Count); i++)
         {
-            if(a.digits[i] < b.digits[i]) return true;
-            if(a.digits[i] > b.digits[i]) return false;
+            if(a.digits[i] < b.digits[i]) return !sign;
+            if(a.digits[i] > b.digits[i]) return sign;
         }
 
         return a.Count < b.Count;
