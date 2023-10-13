@@ -70,6 +70,14 @@ while(true)
         Console.Write("\u001b[32mВведіть вираз>\u001b[0m ");
         string? input = Console.ReadLine();
         if (input == null || input.Trim().Length == 0) break;
+        if (input=="debug") {
+            Evaluator.VERBOSE = !Evaluator.VERBOSE;
+            continue;
+        }
+        if (input=="prefix") {
+            RLNumber.NOPREFIX = !RLNumber.NOPREFIX;
+            continue;
+        }
         RLNumber result = Evaluator.EvaluateExpression(input);
         Console.WriteLine("Результат: "+ result.ToString() + " = " + result.ToDouble());
     }

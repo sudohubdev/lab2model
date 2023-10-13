@@ -87,12 +87,32 @@ namespace Prime.UnitTests.Services
                 RLNumber num2 = new(rand.NextDouble()*1000-500);
                 RLNumber result = num * num2;
                 double expected = num.ToDouble() * num2.ToDouble();
-                Console.WriteLine("Результат РЛ віднімання: " + result.ToString());
+                Console.WriteLine("Результат РЛ множення: " + result.ToString());
                 Console.WriteLine("Результат РЛ в десятковій системі: " + result.ToDouble());
 
                 double diff = Math.Abs(expected - result.ToDouble());
                 Assert.IsTrue(diff < 0.0001);
             });
+        }
+        [TestMethod]
+        public void TestDivRNG(){
+            Random rand = new((int)DateTime.Now.Ticks);
+            for(int i = 0; i < 100; i++)
+            //Parallel.For(0, 100000, i =>
+            {
+                RLNumber num = new(rand.NextDouble()*1000-500);
+                RLNumber num2 = new(rand.NextDouble()*1000-500);
+                if(num2 == 0) num2 = new(1);
+
+                RLNumber result = num / num2;
+                double expected = num.ToDouble() / num2.ToDouble();
+                Console.WriteLine("Результат РЛ ділення: " + result.ToString());
+                Console.WriteLine("Результат РЛ в десятковій системі: " + result.ToDouble());
+
+                double diff = Math.Abs(expected - result.ToDouble());
+                Assert.IsTrue(diff < 0.0001);
+            //});
+            }
         }
 
 

@@ -118,22 +118,107 @@ public partial class RLNumber {
         return result;
     }
 
-    public static RLNumber operator /(RLNumber a, RLNumber b) {
+    public static RLNumber operator /(RLNumber aa, RLNumber bb) {
         RLNumber result = new RLNumber("0.0");
-        if(a == 0 || b == 0) return result;
+        if(aa == 0) return result;
+        if(bb == 0) {
+            RLNumber inf = new RLNumber("0.1.1024");
+            inf.sign = aa.sign ^ bb.sign;
+            return inf;
+        }
+
+        //цей метод деструктивний, тому створюємо копію
+        RLNumber? a = aa.Clone() as RLNumber ?? throw new Exception("Invalid RLNumber");
+        RLNumber? b = bb.Clone() as RLNumber ?? throw new Exception("Invalid RLNumber");
 
         result.sign = a.sign ^ b.sign;
-        //Ni/Nk = Ni-Nk
-        for (int i = 0; i < a.Count; i++)
-        {
-            for (int k = 0; k < b.Count; k++)
-            {
-                result.digits.Add(a.digits[i] - b.digits[k]);
+        /*
+        1. перевірка на 0
+        2. знаходження першої цифри знаходженням шляхом віднімання старшого
+           розряду дільника зі старшим розрядом діленого
+        3. множення цифри частки на дільник шляхом додавання до кожного розряду дільника
+        4. порівняння діленогою якщо ділене >= добутку то виконуємо п5, інакше поточна
+           цифра зменшужжться на одиниицю і переходимо до п2
+        5. віднімання з діленого отриманого добутку
+        6. перевірка критерію закінчення ділення відповідно до методу обробки. кщо виконується то
+           переходимо до п7, інакше виконується пошук наступної цифри частки шляхом віднімання 
+           старшого розряду дільника зі старшого залишку від ділення і перехід до п2
+        7. знак
+        8. кінець
+
+        a=0.4.10.8.6.4 (1360)
+        b=0.2.5.3      (40)
+        C = a/b        (34) 0.2.5.1
+
+        2. 10-5-5 (множимо на 5.3)
+        3. 5*5.3=10.8
+        4. 10.8.6.4 > 10.8
+        5. 10.8.6.4 - 10.8 = 6.4 (виклик оператора - рл)
+        C=0.1.5 (цифра частки)
+
+        2. друга цифра частки 6-5=1 (до пункту 2)
+        3 1*5.3=6.4
+        4 6.4 = 6.4 
+        5 6.4 - 6.4 = 0 (виклик оператора - рл)
+        С=0.2.5.1
+        6.4 - 6.4 = 0 //завершення ділення
+
+        */
+
+        
+        //2. знаходження першої цифри знаходженням шляхом віднімання старшого
+        int trap = 0;
+        int firstDigit = 0;
+        while(true){
+            var differ = a.digits.Zip(b.digits, (x, y) => x - y);//різниця між цифрами
+            
+            try{
+                firstDigit = differ.Where(i=>i!=0).First();//перша цифра яка не 0
             }
+            catch(Exception){
+                //якщо всі цифри 0 то виходимо
+                Console.WriteLine("Всі цифри 0");
+            }
+
+            result.digits.Add(firstDigit);//КОЛИ ЗАПИСУВАТИ В РЕЗУЛЬТАТ?
+            firstDigit = Math.Abs(firstDigit);
+            PTWO:
+            //3. множення цифри частки на дільник шляхом додавання до кожного розряду дільника
+            RLNumber tmp = b.Clone() as RLNumber;
+            if(tmp is null) throw new Exception("Invalid RLNumber");
+
+            for (int i = 0; i < tmp.digits.Count; i++)
+            {
+                tmp.digits[i] += firstDigit;
+            }
+            //if(firstDigit == 0)
+                //tmp.digits.Clear();
+            //4. 
+            if(a>=tmp){
+                //5. віднімання з діленого отриманого добутку
+                a -= tmp;
+                //6. перевірка критерію закінчення ділення, результат віднімання = 0
+                if(a == 0 || a < new RLNumber(1.0d/1024.0d)){
+                    //зʼєднаємо однакові цифри
+                    result.Merge();
+                    result.sign = a.sign ^ b.sign;
+                    return result;//0.8.-2.-4.-6.-8.-10.-12.-14.-16
+                }
+            }
+            else{
+                //інакше поточна цифра зменшується на одиниицю і переходимо до п2
+                //remove firstDigit from result
+                //result.digits.Remove(firstDigit);
+                firstDigit--;
+                //result.digits.Add(firstDigit);
+                goto PTWO;
+            }
+            if(trap++ > 1000){
+                return result;
+                //throw new Exception("Infinite loop");
+            }
+
         }
-        //зʼєднаємо однакові цифри
-        result.Merge();
-        return result;
     }
 
     public static bool operator <(RLNumber a, RLNumber b) {
@@ -150,6 +235,12 @@ public partial class RLNumber {
     }
     public static bool operator >(RLNumber a, RLNumber b) {
         return !(a<b) && a!=b;
+    } 
+    public static bool operator >=(RLNumber a, RLNumber b) {
+        return !(a<b) || a==b;
+    } 
+    public static bool operator <=(RLNumber a, RLNumber b) {
+        return !(a>b) || a==b;
     } 
     #endregion
 }

@@ -1,15 +1,25 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 namespace Lab3;
 
 [System.Diagnostics.DebuggerDisplay("{ToString()} ({ToDouble()})")]
 public partial class RLNumber:ICloneable {
+    public static bool NOPREFIX = false;
     List<int> digits;
     bool sign = false;
     public RLNumber(string number, bool isPrefixed = true) {
         digits = new List<int>();
+        if(number.Contains("0b")){
+            //двійковий запис у РЛ 
+            number = number.Replace("0b", "");
+            RLNumber num = new RLNumber(Misc.ConvertBinaryToDouble(number));
+            digits = num.digits;
+            sign = num.sign;
+            return;
+        }
         List<string> groups = Regex.Split(number, @"(-*\d+)").ToList();
         groups.RemoveAll(x => x == "");
         groups.RemoveAll(x => x == ".");
@@ -71,6 +81,12 @@ public partial class RLNumber:ICloneable {
         Sort();
         //merge same digits to i+1
         bool done=false;
+        
+        if(Evaluator.VERBOSE)
+            Console.WriteLine("РЕЗУЛЬТАТ ДО ЗЛИТТЯ: "+ToString());
+        else
+            Debug.WriteLine("РЕЗУЛЬТАТ ДО ЗЛИТТЯ: "+ToString());
+
         while(!done){//деклька ітерацій поки у нас вже не буде ніяких пар
             done=true;
             for (int i = 0; i < Count-1; i++)
@@ -83,10 +99,19 @@ public partial class RLNumber:ICloneable {
 
             }
         }
+        if(Evaluator.VERBOSE)
+            Console.WriteLine("РЕЗУЛЬТАТ ПІСЛЯ ЗЛИТТЯ: "+ToString());
+        else
+            Debug.WriteLine("РЕЗУЛЬТАТ ПІСЛЯ ЗЛИТТЯ: "+ToString());
+
+         Debug.WriteLine("");
     }
 
     // конвертери в десяткову і в строку
     public override string ToString() {
+        if(NOPREFIX){
+            return sign ? "-" : "" + string.Join(".", digits.Select(d => d.ToString()));
+        }
         return (sign ? "1" : "0") + "." + Count + (digits.Count>0?".":"") + //знак і кількість цифр
         string.Join(".", digits.Select(d => d.ToString()));//РЛ-код
     }

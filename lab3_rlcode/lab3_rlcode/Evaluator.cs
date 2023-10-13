@@ -8,11 +8,12 @@ namespace Lab3
 {
     public class Evaluator
     {
+        public static bool VERBOSE = false;
         public static RLNumber EvaluateExpression(string expression)
         {
             // Parse the expression and build the expression tree
             var expressionTree = ParseExpression(expression);
-
+            if(VERBOSE) Console.WriteLine("Проміжна РЛ формула: " + expressionTree.ToString());
             // Compile and evaluate the expression
             expressionTree = Expression.Convert(expressionTree, typeof(object));
             var compiledExpression = Expression.Lambda<Func<object>>(expressionTree).Compile();
@@ -39,8 +40,9 @@ namespace Lab3
             var operands = new Stack<Expression>();
             var operators = new Stack<char>();
 
-            foreach (var token in tokens)
+            foreach (var tokenn in tokens)
             {
+                string token = tokenn.Trim();// " - " -> "-"
                 if (Ops.Contains(token[0]) && token.Length == 1)
                 {
                     if (token[0] == '(')
