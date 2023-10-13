@@ -119,10 +119,10 @@ public partial class RLNumber {
     }
 
     public static RLNumber operator /(RLNumber aa, RLNumber bb) {
-        RLNumber result = new RLNumber("0.0");
+        RLNumber result = new("0.0");
         if(aa == 0) return result;
         if(bb == 0) {
-            RLNumber inf = new RLNumber("0.1.1024");
+            RLNumber inf = new("0.1.1024");//справжня... безкінечність?
             inf.sign = aa.sign ^ bb.sign;
             return inf;
         }
@@ -145,26 +145,7 @@ public partial class RLNumber {
            старшого розряду дільника зі старшого залишку від ділення і перехід до п2
         7. знак
         8. кінець
-
-        a=0.4.10.8.6.4 (1360)
-        b=0.2.5.3      (40)
-        C = a/b        (34) 0.2.5.1
-
-        2. 10-5-5 (множимо на 5.3)
-        3. 5*5.3=10.8
-        4. 10.8.6.4 > 10.8
-        5. 10.8.6.4 - 10.8 = 6.4 (виклик оператора - рл)
-        C=0.1.5 (цифра частки)
-
-        2. друга цифра частки 6-5=1 (до пункту 2)
-        3 1*5.3=6.4
-        4 6.4 = 6.4 
-        5 6.4 - 6.4 = 0 (виклик оператора - рл)
-        С=0.2.5.1
-        6.4 - 6.4 = 0 //завершення ділення
-
         */
-
         
         //2. знаходження першої цифри знаходженням шляхом віднімання старшого
         int trap = 0;
@@ -180,25 +161,24 @@ public partial class RLNumber {
                 Console.WriteLine("Всі цифри 0");
             }
 
-            result.digits.Add(firstDigit);//КОЛИ ЗАПИСУВАТИ В РЕЗУЛЬТАТ?
+            //result.digits.Add(firstDigit);//КОЛИ ЗАПИСУВАТИ В РЕЗУЛЬТАТ?
             firstDigit = Math.Abs(firstDigit);
             PTWO:
             //3. множення цифри частки на дільник шляхом додавання до кожного розряду дільника
-            RLNumber tmp = b.Clone() as RLNumber;
+            RLNumber? tmp = b.Clone() as RLNumber;
             if(tmp is null) throw new Exception("Invalid RLNumber");
 
             for (int i = 0; i < tmp.digits.Count; i++)
             {
                 tmp.digits[i] += firstDigit;
             }
-            //if(firstDigit == 0)
-                //tmp.digits.Clear();
-            //4. 
+            trap++;
             if(a>=tmp){
+                result.digits.Add(firstDigit);
                 //5. віднімання з діленого отриманого добутку
                 a -= tmp;
                 //6. перевірка критерію закінчення ділення, результат віднімання = 0
-                if(a == 0 || a < new RLNumber(1.0d/1024.0d)){
+                if(a == 0){
                     //зʼєднаємо однакові цифри
                     result.Merge();
                     result.sign = a.sign ^ b.sign;
@@ -207,15 +187,12 @@ public partial class RLNumber {
             }
             else{
                 //інакше поточна цифра зменшується на одиниицю і переходимо до п2
-                //remove firstDigit from result
-                //result.digits.Remove(firstDigit);
                 firstDigit--;
-                //result.digits.Add(firstDigit);
                 goto PTWO;
             }
-            if(trap++ > 1000){
+            //коли не ділиться націло зупиняємося через 10000 ітерацій або коли точність досягнута
+            if(trap > 1000 || a < new RLNumber("0.1.-24")){
                 return result;
-                //throw new Exception("Infinite loop");
             }
 
         }

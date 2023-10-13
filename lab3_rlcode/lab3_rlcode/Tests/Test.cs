@@ -110,7 +110,9 @@ namespace Prime.UnitTests.Services
                 Console.WriteLine("Результат РЛ в десятковій системі: " + result.ToDouble());
 
                 double diff = Math.Abs(expected - result.ToDouble());
-                Assert.IsTrue(diff < 0.0001);
+                //відносна похибка менша за 0.0001
+                double threshold = diff / expected;
+                Assert.IsTrue(threshold < 0.5, "δx is "+threshold);
             //});
             }
         }

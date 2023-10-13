@@ -121,7 +121,14 @@ public partial class RLNumber:ICloneable {
         return digits.Select(num=>Math.Pow(2,num)).Aggregate((a,b)=>a+b) * (sign ? -1 : 1);
     }
 
-
+    //explicit cast
+    public static explicit operator RLNumber(double d) {
+        return new RLNumber(d);
+    }
+    public static explicit operator double(RLNumber d) {
+        return d.ToDouble();
+    }
+    
     public override int GetHashCode()
     {
         return digits.GetHashCode();
